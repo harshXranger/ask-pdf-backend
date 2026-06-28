@@ -1,0 +1,5 @@
+.env
+uploads/
+vector_stores/
+__pycache__/
+tempCodeRunnerFile.py
