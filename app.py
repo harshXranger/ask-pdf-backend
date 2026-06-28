@@ -25,7 +25,7 @@ os.makedirs(VECTOR_STORE_FOLDER, exist_ok=True)
 
 # ✅ Gemini config
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")  # or gemini-1.5-pro
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")  
 
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY environment variable is not set.")
@@ -40,9 +40,7 @@ TOP_K = int(os.environ.get("TOP_K", 5))
 MAX_CONTENT_LENGTH = 10 * 1024 * 1024  # 10 MB
 CLEANUP_AFTER_SECONDS = 24 * 60 * 60
 
-# ------------------------------------------------------------
 # App setup
-# ------------------------------------------------------------
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 
@@ -51,9 +49,8 @@ CORS(app, resources={r"/*": {"origins": FRONTEND_ORIGIN}})
 
 _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# ------------------------------------------------------------
+
 # Text cleaning utilities
-# ------------------------------------------------------------
 def clean_text(text: str) -> str:
     if not text:
         return ""
@@ -70,9 +67,7 @@ def clean_text(text: str) -> str:
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
-# ------------------------------------------------------------
 # PDF text extraction
-# ------------------------------------------------------------
 def extract_pages_text(pdf_path: str) -> tuple[list[tuple[int, str]], int]:
     doc = fitz.open(pdf_path)
     try:
@@ -85,9 +80,7 @@ def extract_pages_text(pdf_path: str) -> tuple[list[tuple[int, str]], int]:
     finally:
         doc.close()
 
-# ------------------------------------------------------------
 # Chunking
-# ------------------------------------------------------------
 def chunk_text(text: str, chunk_size: int = CHUNK_SIZE, min_chunk_size: int = MIN_CHUNK_SIZE) -> list[str]:
     cleaned = " ".join((text or "").split())
     if not cleaned:
