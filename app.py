@@ -24,8 +24,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(VECTOR_STORE_FOLDER, exist_ok=True)
 
 # ✅ Gemini config
+
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")  
+
 
 if not GEMINI_API_KEY:
     raise RuntimeError("GEMINI_API_KEY environment variable is not set.")
@@ -339,4 +341,5 @@ def ask():
 
 if __name__ == "__main__":
     import os
+    
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
