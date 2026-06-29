@@ -10,7 +10,7 @@ import fitz
 import numpy as np
 import faiss
 import google.generativeai as genai
-from sentence_transformers import SentenceTransformer
+
 import unicodedata
 import re
 
@@ -49,7 +49,7 @@ app.config["MAX_CONTENT_LENGTH"] = MAX_CONTENT_LENGTH
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "*")
 CORS(app, resources={r"/*": {"origins": FRONTEND_ORIGIN}})
 
-_embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 
 # Text cleaning utilities
@@ -116,19 +116,38 @@ def chunk_pdf_by_page(pages: list[tuple[int, str]], chunk_size: int = CHUNK_SIZE
             items.append({"text": part, "page": page_num})
     return items
 
+
+    
+
 # ------------------------------------------------------------
 # Vector store
 # ------------------------------------------------------------
+def get_embeddings(texts):
+    vectors = []
+
+    for text in texts:
+        response = genai.embed_content(
+            model="models/embedding-001",
+            content=text,
+            task_type="retrieval_document"
+        )
+        vectors.append(response["embedding"])
+
+    vectors = np.array(vectors).astype("float32")
+
+    faiss.normalize_L2(vectors)
+
+    return vectors
+
+
 def create_vector_store(text_chunks: list[str]):
-    if not text_chunks:
-        raise ValueError("No text chunks to embed.")
-    embeddings = _embedding_model.encode(
-        text_chunks, convert_to_numpy=True, normalize_embeddings=True, show_progress_bar=False,
-    )
-    embeddings = np.asarray(embeddings, dtype="float32")
-    dim = int(embeddings.shape[1])
+    embeddings = get_embeddings(text_chunks)
+
+    dim = embeddings.shape[1]
+
     index = faiss.IndexFlatIP(dim)
     index.add(embeddings)
+
     return index, embeddings
 
 def load_latest_vector_store():
@@ -152,9 +171,18 @@ def load_latest_vector_store():
 # ------------------------------------------------------------
 # Search
 # ------------------------------------------------------------
-def embed_question(question: str) -> np.ndarray:
-    vector = _embedding_model.encode([question], convert_to_numpy=True, normalize_embeddings=True, show_progress_bar=False)
-    return np.asarray(vector, dtype="float32")
+def embed_question(question):
+    response = genai.embed_content(
+        model="models/embedding-001",
+        content=question,
+        task_type="retrieval_query"
+    )
+
+    vector = np.array([response["embedding"]]).astype("float32")
+
+    faiss.normalize_L2(vector)
+
+    return vector
 
 def search_faiss(index, question_vector, chunks, top_k=TOP_K, *, chunk_pages=None):
     top_k = max(1, min(top_k, len(chunks)))
