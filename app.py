@@ -128,7 +128,7 @@ def get_embeddings(texts):
 
     for text in texts:
         response = genai.embed_content(
-            model="models/embedding-001",
+            model="models/embedding-004",
             content=text,
             task_type="retrieval_document"
         )
