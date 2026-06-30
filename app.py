@@ -174,7 +174,7 @@ def load_latest_vector_store():
 # ------------------------------------------------------------
 def embed_question(question):
     response = genai.embed_content(
-        model="models/embedding-001",
+        model="models/embedding-004",
         content=question,
         task_type="retrieval_query"
     )
