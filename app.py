@@ -5,6 +5,7 @@ import json
 import time
 import threading
 from werkzeug.utils import secure_filename
+import traceback
 
 import fitz
 import numpy as np
@@ -326,8 +327,9 @@ def upload_file():
                 "chunks": chunk_texts, "chunk_pages": chunk_pages,
             }, f, ensure_ascii=False, indent=2)
     except Exception as e:
-        print("VECTOR STORE ERROR:", str(e))
-        return jsonify({"error": "Failed to build vector store", "details": str(e)}), 500
+        traceback.print_exc()
+        print("VECTOR STORE ERROR:", repr(e))
+        return jsonify({"error": "Failed to build vector store","details": str(e)}),500
     return jsonify({
         "message": "PDF processed successfully", "filename": filename,
         "pages": pages, "chunks_created": len(chunk_texts),
